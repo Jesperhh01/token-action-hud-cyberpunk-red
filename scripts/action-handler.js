@@ -1624,7 +1624,7 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
                         : 'unloaded',
                     },
                     info2: {
-                      text: `${weapon.system.magazine.value}/${weapon.system.magazine.max}`,
+                      text: `${weapon.system.magazine?.value}/${weapon.system.magazine?.max}`,
                     },
                     name: 'Reload',
                   },
