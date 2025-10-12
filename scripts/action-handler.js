@@ -59,7 +59,7 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
         if (
           this.equipUnarmed &&
           !this.actor.itemTypes.weapon.find(
-            (item) => item.name === unarmedWeapon.name
+            (item) => item?.name === unarmedWeapon?.name
           )
         ) {
           await this.actor.createEmbeddedDocuments('Item', [unarmedWeapon]);
@@ -71,10 +71,10 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
         if (
           this.equipThrownWeapon &&
           !this.actor.itemTypes.weapon.find(
-            (item) => item.name === thrownWeapon.name
+            (item) => item?.name === thrownWeapon?.name
           )
         ) {
-          await this.actor.createEmbeddedDocuments('Item', [item]);
+          await this.actor.createEmbeddedDocuments('Item', [thrownWeapon]);
         }
       }
 
