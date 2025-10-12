@@ -38,6 +38,9 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
       // console.debug('*** itemTypes', this.actor.itemTypes);
 
       if (game.canvas.tokens.controlled.length > 1) {
+        this.actors = game.canvas.tokens.controlled;
+        this.#buildMultipleTokenActions();
+
         return;
       }
 
@@ -92,7 +95,6 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
       }
 
       // Set actor and token variables
-      this.actors = !this.actor ? game.canvas.tokens.controlled : [this.actor];
       this.actorType = this.actor?.type;
 
       // Set items variable
@@ -112,10 +114,6 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
         case 'demon':
           this.#buildStats();
           break;
-      }
-
-      if (!this.actor) {
-        this.#buildMultipleTokenActions();
       }
     }
 
@@ -305,7 +303,20 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
      * @private
      * @returns {object}
      */
-    async #buildMultipleTokenActions() {}
+    async #buildMultipleTokenActions() {
+      console.debug('*** this.actors', this.actors);
+      /**
+       * What can multiple actors do?
+       * They should all be Characters or Mooks. Then, they could all:
+       * - Roll Stat
+       * - Roll Death Save
+       * - Roll Critical Injury
+       * - Roll Facedown
+       * - Toggle Effects
+       * - Roll Initiatvie
+       * - Toggle Visibility
+       */
+    }
 
     async #buildFVTTCoreActions() {
       const groupData = { id: GROUP.utility.id, type: 'system' };
@@ -986,7 +997,9 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
 
           const cssClass = () => {
             if (!canRezDerez) return '';
-            return 'toggle' + (programReference.system.isRezzed ? ' active' : '');
+            return (
+              'toggle' + (programReference.system.isRezzed ? ' active' : '')
+            );
           };
 
           const info2 = () => {
@@ -1043,7 +1056,10 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
                         this.delimiter
                       ),
                       id: 'rollDef',
-                      info1: { class: 'fas fa-shield red-fg', text: ` ${programReference.system.def.toString()}` },
+                      info1: {
+                        class: 'fas fa-shield red-fg',
+                        text: ` ${programReference.system.def.toString()}`,
+                      },
                       name: coreModule.api.Utils.i18n(
                         'CPR.characterSheet.bottomPane.fight.rollDefense'
                       ),
@@ -1098,7 +1114,10 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
                         this.delimiter
                       ),
                       id: 'rollAnAttack',
-                      info1: { class: 'fas fa-fist-raised red-fg', text: ` ${programReference.system.atk.toString()}` },
+                      info1: {
+                        class: 'fas fa-fist-raised red-fg',
+                        text: ` ${programReference.system.atk.toString()}`,
+                      },
                       name: coreModule.api.Utils.i18n(
                         'CPR.characterSheet.bottomPane.fight.rollAnAttack'
                       ),
@@ -1192,9 +1211,11 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
         }
 
         if (!['program', 'itemUpgrade'].includes(item.type)) {
-          console.debug('*** item is something else that needs to be categorized', item);
+          console.debug(
+            '*** item is something else that needs to be categorized',
+            item
+          );
         }
-
       });
     }
 
@@ -1294,10 +1315,10 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
         const { id, name } = skill;
         let i18nName = '';
         switch (name) {
-          case "Lowdown":
-          case "Martial":
-          case "Physical":
-          case "Technical":
+          case 'Lowdown':
+          case 'Martial':
+          case 'Physical':
+          case 'Technical':
             i18nName = coreModule.api.Utils.i18n(
               `tokenActionHud.template.night-city-mooks.${name.toLowerCase()}.name`
             );
@@ -1613,14 +1634,19 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
                   },
                   // Reload:
                   {
+                    cssClass: `ranged ${
+                      weapon.system.isRanged && !weapon.system.magazine.value
+                        ? 'empty'
+                        : undefined
+                    }`,
                     encodedValue: [WEAPON_ACTION_TYPES.RELOAD, itemId].join(
                       this.delimiter
                     ),
                     img: Utils.getWeaponActionIcon(WEAPON_ACTION_TYPES.RELOAD),
                     id: WEAPON_ACTION_TYPES.RELOAD,
                     info1: {
-                      text: weapon.system.magazine.value
-                        ? `${installedAmmo.name}`
+                      text: (weapon.system.magazine.value && installedAmmo)
+                        ? `${installedAmmo?.name}`
                         : 'unloaded',
                     },
                     info2: {
@@ -1639,46 +1665,49 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
               const skillItem = this.sortedItemTypes.skill.find(
                 (skill) => skill.name === weapon.system.weaponSkill
               );
-              const skillMod = skillItem.system?.level ?? 0;
-              const statMod =
-                this.actor.system.stats[skillItem.system.stat].value ?? 0;
-              const attackMod = weapon.system.attackMod ?? 0;
-              const totalMod =
-                skillMod + statMod + attackMod - (isAimed ? 8 : 0);
+              if (skillItem) {
+                const skillMod = skillItem?.system?.level ?? 0;
+                const statMod =
+                  this.actor.system.stats[skillItem.system.stat].value ?? 0;
+                const attackMod = weapon.system.attackMod ?? 0;
+                const totalMod =
+                  skillMod + statMod + attackMod - (isAimed ? 8 : 0);
 
-              actions.push(
-                // Roll Attack
-                {
-                  encodedValue: [WEAPON_ACTION_TYPES.ROLL_ATTACK, itemId].join(
-                    this.delimiter
-                  ),
-                  info1: { text: String(totalMod) },
-                  img: Utils.getWeaponActionIcon(
-                    WEAPON_ACTION_TYPES.ROLL_ATTACK
-                  ),
-                  id: WEAPON_ACTION_TYPES.ROLL_ATTACK,
-                  name: 'Roll Attack',
-                }
-              );
-
-              if (!isSuppressive) {
                 actions.push(
-                  // Roll Damage
+                  // Roll Attack
                   {
                     encodedValue: [
-                      WEAPON_ACTION_TYPES.ROLL_DAMAGE,
+                      WEAPON_ACTION_TYPES.ROLL_ATTACK,
                       itemId,
                     ].join(this.delimiter),
+                    info1: { text: String(totalMod) },
                     img: Utils.getWeaponActionIcon(
-                      WEAPON_ACTION_TYPES.ROLL_DAMAGE
+                      WEAPON_ACTION_TYPES.ROLL_ATTACK
                     ),
-                    id: WEAPON_ACTION_TYPES.ROLL_DAMAGE,
-                    info2: {
-                      text: isAutofire ? '2d6' : weapon.system.damage,
-                    },
-                    name: 'Roll Damage',
+                    id: WEAPON_ACTION_TYPES.ROLL_ATTACK,
+                    name: 'Roll Attack',
                   }
                 );
+
+                if (!isSuppressive) {
+                  actions.push(
+                    // Roll Damage
+                    {
+                      encodedValue: [
+                        WEAPON_ACTION_TYPES.ROLL_DAMAGE,
+                        itemId,
+                      ].join(this.delimiter),
+                      img: Utils.getWeaponActionIcon(
+                        WEAPON_ACTION_TYPES.ROLL_DAMAGE
+                      ),
+                      id: WEAPON_ACTION_TYPES.ROLL_DAMAGE,
+                      info2: {
+                        text: isAutofire ? '2d6' : weapon.system.damage,
+                      },
+                      name: 'Roll Damage',
+                    }
+                  );
+                }
               }
             }
           }
