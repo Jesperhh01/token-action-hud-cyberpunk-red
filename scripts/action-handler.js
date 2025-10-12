@@ -9,6 +9,11 @@ import { Utils } from './utils.js';
 
 export let ActionHandler = null;
 
+// Item ID 29p2bEfPcAWHpsTY is "Thrown Weapon" in the CPR compendium.
+const CPRC_THROWN_WEAPON_ID = '29p2bEfPcAWHpsTY';
+// Item ID X6VYB5awDbtURwIv is "Unarmed" in the CPR compendium.
+const CPRC_UNARMED_WEAPON_ID = 'X6VYB5awDbtURwIv';
+
 Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
   // console.debug('*** coreModule', coreModule);
 
@@ -48,25 +53,27 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
       this.equipUnarmed = Utils.getSetting('equipUnarmed');
 
       if (this.actor?.type === 'character' || this.actor?.type === 'mook') {
+        let unarmedWeapon = await game.packs
+          .get('cyberpunk-red-core.core_weapons')
+          .getDocument(CPRC_UNARMED_WEAPON_ID);
         if (
           this.equipUnarmed &&
-          !this.actor.items.find((item) => item.name === 'Unarmed')
+          !this.actor.itemTypes.weapon.find(
+            (item) => item.name === unarmedWeapon.name
+          )
         ) {
-          // Item ID X6VYB5awDbtURwIv is "Unarmed" in the CPR compendium.
-          let item = await game.packs
-            .get('cyberpunk-red-core.core_weapons')
-            .getDocument('X6VYB5awDbtURwIv');
-          await this.actor.createEmbeddedDocuments('Item', [item]);
+          await this.actor.createEmbeddedDocuments('Item', [unarmedWeapon]);
         }
 
+        let thrownWeapon = await game.packs
+          .get('cyberpunk-red-core.core_weapons')
+          .getDocument(CPRC_THROWN_WEAPON_ID);
         if (
           this.equipThrownWeapon &&
-          !this.actor.items.find((item) => item.name === 'Thrown Weapon')
+          !this.actor.itemTypes.weapon.find(
+            (item) => item.name === thrownWeapon.name
+          )
         ) {
-          // Item ID 29p2bEfPcAWHpsTY is "Thrown Weapon" in the CPR compendium.
-          let item = await game.packs
-            .get('cyberpunk-red-core.core_weapons')
-            .getDocument('29p2bEfPcAWHpsTY');
           await this.actor.createEmbeddedDocuments('Item', [item]);
         }
       }
