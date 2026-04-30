@@ -2,11 +2,11 @@
   "id": "token-action-hud-cyberpunk-red",
   "title": "Token Action HUD for Cyberpunk RED",
   "description": "Token Action HUD is a repositionable HUD of actions for a selected token",
-  "version": "1.0.5",
+  "version": "1.0.5-v14-local.1",
   "compatibility": {
-    "maximum": "12.999",
-    "minimum": "12.343",
-    "verified": "12.343"
+    "maximum": "14.999",
+    "minimum": "14",
+    "verified": "14"
   },
   "relationships": {
     "requires": [
@@ -14,27 +14,16 @@
         "id": "token-action-hud-core",
         "type": "module",
         "compatibility": {
-          "maximum": "2.0.99",
-          "minimum": "2.0.11",
-          "verified": "2.0.16"
-        }
-      },
-      {
-        "id": "socketlib",
-        "type": "module",
-        "compatibility": {
-          "verified": "1.1.3"
+          "maximum": "2.1.99",
+          "minimum": "2.1.0",
+          "verified": "2.1.1"
         }
       }
     ],
     "systems": [
       {
         "id": "cyberpunk-red-core",
-        "type": "system",
-        "compatibility": {
-          "maximum": "v0.99.99",
-          "verified": "v0.89.2"
-        }
+        "type": "system"
       }
     ],
     "recommends": [
