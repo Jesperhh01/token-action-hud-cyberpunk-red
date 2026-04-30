@@ -81,7 +81,7 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
           break;
         }
       }
-      actor.sheet._updateOwnedItemProp(item, 'system.equipped', newValue);
+      return item.update({ 'system.equipped': newValue });
     }
 
     static getWeaponActionIcon(type) {

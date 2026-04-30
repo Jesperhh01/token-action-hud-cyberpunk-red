@@ -33,12 +33,19 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
      */
     async handleActionClick(event, encodedValue) {
       // console.debug('*** handleActionClick', {event, encodedValue});
+      const action = this.action ?? {};
+      const actionSystem = action.system ?? {};
+      const resolvedEncodedValue = encodedValue ?? action.encodedValue;
       if (!encodedValue) {
-        coreModule.api.Logger.debug('handleActionClick `encodedValue` is undefined. This is likely intentional as the button that triggered it was a no-op.');
-        return;
+        if (!resolvedEncodedValue && !actionSystem.actionType) {
+          coreModule.api.Logger.debug('handleActionClick `encodedValue` is undefined. This is likely intentional as the button that triggered it was a no-op.');
+          return;
+        }
       }
 
-      const [actionTypeId, actionId] = encodedValue.split('|');
+      const [encodedActionTypeId, encodedActionId] = resolvedEncodedValue?.split('|') ?? [];
+      const actionTypeId = actionSystem.actionType ?? encodedActionTypeId;
+      const actionId = actionSystem.actionId ?? encodedActionId;
 
       /**
        * Enable right-click on core item types to open the item sheet
@@ -73,7 +80,7 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
           this.token,
           actionTypeId,
           actionId,
-          encodedValue
+          resolvedEncodedValue
         );
         return;
       }
@@ -149,25 +156,21 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
               .find((s) => s.active)
               .tokens.find((t) => t.id === token.id);
             await activeCyberdeck.rezProgram(program, requestingToken);
-            actor.sheet._updateOwnedItem(activeCyberdeck);
           }
           break;
         case 'derez':
           if (program.system.isRezzed) {
             await activeCyberdeck.derezProgram(program);
-            actor.sheet._updateOwnedItem(activeCyberdeck);
           }
           break;
         case 'reduce-rez':
           if (program.system.isRezzed) {
             await activeCyberdeck.reduceRezProgram(program);
-            actor.sheet._updateOwnedItem(activeCyberdeck);
           }
           break;
         case 'reset-rez':
           if (program.system.isRezzed) {
             await activeCyberdeck.resetRezProgram(program);
-            actor.sheet._updateOwnedItem(activeCyberdeck);
           }
           break;
         case 'erase':
@@ -319,7 +322,7 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
           const damageType = this._getFireMode(actionId);
           tahCprRoll = item.createRoll(actionTypeId, actor, { damageType });
 
-          if (actionTypeId === ROLL_TYPES.AIMED) {
+          if (damageType === ROLL_TYPES.AIMED) {
             tahCprRoll.location =
               actor.getFlag(game.system.id, 'aimedLocation') || 'body';
           }
@@ -437,7 +440,7 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
     async #handleRemoveCriticalInjury(actionId, actor) {
       const injury = this.actor.getOwnedItem(actionId);
       if (injury) {
-        await this.actor.sheet._deleteOwnedItem(injury);
+        await this.actor.deleteEmbeddedDocuments('Item', [injury.id]);
       }
     }
 
@@ -506,7 +509,7 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
               if (afTable.length > 0) {
                 newDvTable = flag === actionTypeId ? dvTable : afTable[0];
               }
-              token.flags = { cprDvTable: newDvTable };
+              await CPRSystemUtils.SetDvTable(token, newDvTable.name ?? newDvTable);
             }
           }
 
