@@ -15,7 +15,7 @@ export const CORE_MODULE = {
 /**
  * Core module version required by the system module
  */
-export const REQUIRED_CORE_MODULE_VERSION = '2.0';
+export const REQUIRED_CORE_MODULE_VERSION = '2.1';
 
 /**
  * Action types
@@ -181,7 +181,7 @@ export const ROLL_TYPES = {
   DEATHSAVE: 'deathsave',
   FACEDOWN: 'facedown',
   HUMANITY: 'humanity',
-  INTERFACEABILITY: 'interface',
+  INTERFACEABILITY: 'interfaceAbility',
   NET: 'net',
   ROLEABILITY: 'roleAbility',
   SKILL: 'skill',

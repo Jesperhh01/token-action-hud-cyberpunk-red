@@ -432,10 +432,14 @@ Hooks.once('tokenActionHudCoreApiReady', async (coreModule) => {
         }
 
         actions.push({
-          encodedValue: ['interface', id].join(this.delimiter),
+          encodedValue: [ROLL_TYPES.INTERFACEABILITY, id].join(this.delimiter),
           id,
           img: imgPath + svg + '.svg',
           name,
+          system: {
+            actionId: id,
+            actionType: ROLL_TYPES.INTERFACEABILITY,
+          },
         });
       });
 
